@@ -11,6 +11,7 @@
 ## Example usage:
 
     $ python gitdriver.py 1j6Ygv0_this_is_a_fake_document_id_a8Q66mvt4
+    Create repository "Untitled"
     Initialized empty Git repository in /home/lars/projects/gitdriver/Untitled/.git/
     [master (root-commit) 27baec9] revision from 2013-01-08T21:57:38.837Z
      1 file changed, 1 insertion(+)
@@ -19,6 +20,13 @@
      1 file changed, 1 insertion(+), 1 deletion(-)
     [master eb2302c] revision from 2013-01-09T01:47:29.593Z
      1 file changed, 5 insertions(+), 1 deletion(-)
+    $ ls Untiled
+    content
+    $ cd Untitled
+    $ git log --oneline
+    d41ad6e revision from 2013-01-09T01:47:29.593Z
+    8d3e3ec revision from 2013-01-08T21:57:45.800Z
+    ccc0bdd revision from 2013-01-08T21:57:38.837Z
 
 ## Google setup
 
