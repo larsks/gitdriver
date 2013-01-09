@@ -33,6 +33,7 @@ class GoogleDrive(object):
         self.client_secret = client_secret
         self.scopes = OAUTH_SCOPES
         self.session = requests.Session()
+        self.token = None
 
         if scopes is not None:
             self.scopes.extend(scopes)
@@ -45,14 +46,34 @@ class GoogleDrive(object):
     def authenticate(self):
         self.load_credentials()
 
-        try:
-            self.validate()
-        except ValueError:
+        if self.token is None:
             self.login()
+        else:
+            try:
+                self.refresh()
+                self.validate()
+            except ValueError:
+                self.login()
 
         self.session.headers.update({
             'Authorization': 'Bearer %(access_token)s' % self.token
             })
+
+    def refresh(self):
+        if not 'refresh_token' in self.token:
+            raise ValueError('no refresh token')
+
+        r = self.session.post('%s/token' % OAUTH_URI, {
+            'client_id': self.client_id,
+            'client_secret': self.client_secret,
+            'refresh_token': self.token['refresh_token'],
+            'grant_type': 'refresh_token'})
+
+        if not r:
+            raise ValueError('failed to refresh token')
+
+        self.token['access_token'] = r.json['access_token']
+        self.store_credentials()
 
     def login(self):
         params = {
@@ -83,14 +104,20 @@ class GoogleDrive(object):
         if not r:
             raise ValueError('failed to authenticate')
 
-        with open(self.credentials, 'w') as fd:
-            fd.write(r.text)
+        self.token = r.json
+        self.store_credentials()
 
-        self.load_credentials()
+    def store_credentials(self):
+        with open(self.credentials, 'w') as fd:
+            fd.write(yaml.safe_dump(self.token, encoding='utf-8',
+                default_flow_style=False))
 
     def load_credentials(self):
-        with open(self.credentials) as fd:
-            self.token = json.loads(fd.read())
+        try:
+            with open(self.credentials) as fd:
+                self.token = yaml.load(fd)
+        except IOError:
+            pass
 
     def validate(self):
         r = requests.get('%s?access_token=%s' % (
@@ -100,21 +127,19 @@ class GoogleDrive(object):
         if not r:
             raise ValueError('failed to validate')
 
-def parse_args():
-    p = argparse.ArgumentParser()
-    p.add_argument('--config', '-f', default='gd.conf')
-    return p.parse_args()
+    def files(self):
+        r = self.session.get('%s/files' % DRIVE_URI).json
 
-def main():
-    opts = parse_args()
-    cfg = yaml.load(open(opts.config))
-    gd = GoogleDrive(
-            client_id=cfg['googledrive']['client id'],
-            client_secret=cfg['googledrive']['client secret'],
-            scopes=[DRIVE_RW_SCOPE],
-            )
+        for fspec in r['items']:
+            yield fspec
 
-    gd.authenticate()
+    def get_file_metadata(self, fid):
+        return self.session.get('%s/files/%s' % (DRIVE_URI, fid)).json
 
-    return gd
+    def revisions(self, fid):
+        r = self.session.get('%s/files/%s/revisions' % (
+            DRIVE_URI, fid)).json
+
+        for rev in r['items']:
+            yield rev
 
