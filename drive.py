@@ -44,22 +44,33 @@ class GoogleDrive(object):
         self.credentials = credentials
 
     def authenticate(self):
+        '''Establish Google credentials.  This will load stored credentials
+        and validate them, and it will call self.login() if stored
+        credentials are unavailable or fail to validate.'''
+
         self.load_credentials()
 
         if self.token is None:
             self.login()
         else:
             try:
+                # Always refresh the token.  This is a dirty hack to avoid
+                # doing anything more complicated.
                 self.refresh()
                 self.validate()
             except ValueError:
                 self.login()
 
+        # Add an Authorization header to all requests made through
+        # our requests.Session object.
         self.session.headers.update({
             'Authorization': 'Bearer %(access_token)s' % self.token
             })
 
     def refresh(self):
+        '''Use a refresh_token to refresh the access_token.  See
+        https://developers.google.com/drive/about-auth'''
+
         if not 'refresh_token' in self.token:
             raise ValueError('no refresh token')
 
@@ -76,6 +87,8 @@ class GoogleDrive(object):
         self.store_credentials()
 
     def login(self):
+        '''Perform OAuth authentication.'''
+
         params = {
             'client_id': self.client_id,
             'scope': ' '.join(OAUTH_SCOPES),
@@ -108,11 +121,13 @@ class GoogleDrive(object):
         self.store_credentials()
 
     def store_credentials(self):
+        '''Write credentials to file.'''
         with open(self.credentials, 'w') as fd:
             fd.write(yaml.safe_dump(self.token, encoding='utf-8',
                 default_flow_style=False))
 
     def load_credentials(self):
+        '''Read credentials from file.'''
         try:
             with open(self.credentials) as fd:
                 self.token = yaml.load(fd)
@@ -120,23 +135,34 @@ class GoogleDrive(object):
             pass
 
     def validate(self):
+        '''Validate token.'''
+
         r = requests.get('%s?access_token=%s' % (
             VALIDATE_URI, self.token['access_token']
             ))
+
+        self._validate_response = r
 
         if not r:
             raise ValueError('failed to validate')
 
     def files(self):
+        '''Return an iterator over the files in Google Drive.'''
+
         r = self.session.get('%s/files' % DRIVE_URI).json
 
         for fspec in r['items']:
             yield fspec
 
     def get_file_metadata(self, fid):
+        '''Return the file metadata for a file identified by its ID.'''
+
         return self.session.get('%s/files/%s' % (DRIVE_URI, fid)).json
 
     def revisions(self, fid):
+        '''Return an iterator over the revisions of a file
+        identified by its ID.'''
+
         r = self.session.get('%s/files/%s/revisions' % (
             DRIVE_URI, fid)).json
 
