@@ -143,3 +143,13 @@ class GoogleDrive(object):
         for rev in r['items']:
             yield rev
 
+if __name__ == '__main__':
+    cfg = yaml.load(open('gd.conf'))
+    gd = GoogleDrive(
+            client_id=cfg['googledrive']['client id'],
+            client_secret=cfg['googledrive']['client secret'],
+            scopes=[DRIVE_RW_SCOPE],
+            )
+
+    gd.authenticate()
+
