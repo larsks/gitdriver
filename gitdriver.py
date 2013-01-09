@@ -34,6 +34,7 @@ def main():
 
     md = gd.get_file_metadata(opts.docid)
 
+    print 'Create repository "%(title)s"' % md
     subprocess.call(['git','init',md['title']])
     os.chdir(md['title'])
 
