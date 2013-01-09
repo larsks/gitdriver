@@ -12,12 +12,11 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument('--config', '-f', default='gd.conf')
     p.add_argument('--text', '-T', action='store_const', const='text/plain',
-            dest='filetype')
+            dest='mime-type')
     p.add_argument('--html', '-H', action='store_const', const='text/html',
-            dest='filetype')
+            dest='mime-type')
+    p.add_argument('--mime-type', default='text/html')
     p.add_argument('docid')
-
-    p.set_defaults(filetype='text/html')
 
     return p.parse_args()
 
@@ -40,7 +39,7 @@ def main():
 
     for rev in gd.revisions(opts.docid):
         with open('content', 'w') as fd:
-            r = gd.session.get(rev['exportLinks'][opts.filetype])
+            r = gd.session.get(rev['exportLinks'][opts.mime_type])
             for chunk in r.iter_content():
                 fd.write(chunk)
         subprocess.call(['git', 'add', 'content'])
