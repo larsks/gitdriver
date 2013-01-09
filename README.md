@@ -7,6 +7,7 @@
 - `--config CONFIG`, `-f CONFIG` -- path to configuration file
 - `--text`, `-T` -- fetch plain text content
 - `--html`, `-H` -- fetch HTML content
+- `--mime-type` -- specify arbitrary mime type
 
 ## Example usage:
 
