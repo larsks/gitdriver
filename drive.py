@@ -83,7 +83,7 @@ class GoogleDrive(object):
         if not r:
             raise ValueError('failed to refresh token')
 
-        self.token['access_token'] = r.json['access_token']
+        self.token['access_token'] = r.json()['access_token']
         self.store_credentials()
 
     def login(self):
@@ -117,7 +117,7 @@ class GoogleDrive(object):
         if not r:
             raise ValueError('failed to authenticate')
 
-        self.token = r.json
+        self.token = r.json()
         self.store_credentials()
 
     def store_credentials(self):
@@ -149,7 +149,7 @@ class GoogleDrive(object):
     def files(self):
         '''Return an iterator over the files in Google Drive.'''
 
-        r = self.session.get('%s/files' % DRIVE_URI).json
+        r = self.session.get('%s/files' % DRIVE_URI).json()
 
         for fspec in r['items']:
             yield fspec
@@ -157,14 +157,14 @@ class GoogleDrive(object):
     def get_file_metadata(self, fid):
         '''Return the file metadata for a file identified by its ID.'''
 
-        return self.session.get('%s/files/%s' % (DRIVE_URI, fid)).json
+        return self.session.get('%s/files/%s' % (DRIVE_URI, fid)).json()
 
     def revisions(self, fid):
         '''Return an iterator over the revisions of a file
         identified by its ID.'''
 
         r = self.session.get('%s/files/%s/revisions' % (
-            DRIVE_URI, fid)).json
+            DRIVE_URI, fid)).json()
 
         for rev in r['items']:
             yield rev
