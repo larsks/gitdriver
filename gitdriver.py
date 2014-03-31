@@ -12,10 +12,10 @@ def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument('--config', '-f', default='gd.conf')
     p.add_argument('--text', '-T', action='store_const', const='text/plain',
-            dest='mime-type')
+            dest='mime_type')
     p.add_argument('--html', '-H', action='store_const', const='text/html',
-            dest='mime-type')
-    p.add_argument('--mime-type', default='text/html')
+            dest='mime_type')
+    p.add_argument('--mime-type', dest='mime_type')
     p.add_argument('--raw', '-R', action='store_true',
             help='Download original document if possible.')
     p.add_argument('docid')
@@ -24,6 +24,9 @@ def parse_args():
 
 def main():
     opts = parse_args()
+    if not opts.mime_type:
+		print "Exactly one mime-type must be given!"
+		exit(1)
     cfg = yaml.load(open(opts.config))
     gd = GoogleDrive(
             client_id=cfg['googledrive']['client id'],

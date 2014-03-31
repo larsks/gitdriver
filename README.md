@@ -5,7 +5,7 @@
 ## Options
 
 - `--config CONFIG`, `-f CONFIG` -- path to configuration file
-- `--text`, `-T` -- fetch plain text content
+- `--text`, `-T` -- fetch plain text content (Look out for BOM)
 - `--html`, `-H` -- fetch HTML content
 - `--mime-type` -- specify arbitrary mime type
 
