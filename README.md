@@ -35,7 +35,7 @@ You will need to create an OAuth client id and secret for use with
 this application, the Drive API [Python quickstart][] has links to the
 necessary steps.
 
-[python quickstart]: https://developers.google.com/drive/quickstart-python#step_1_enable_the_drive_api
+[python quickstart]: https://developers.google.com/drive/v3/web/quickstart/python
 
 ## Configuration
 
